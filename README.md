@@ -23,7 +23,7 @@ $ git clone https://github.com/thiagohsp/ecoleta.git
 $ cd server && npm install 
 
 # iniciar servidor
-$ npm run deb
+$ npm run dev
 
 # Acessar pasta web e instalar dependencias do frontend web
 $ cd web && npm install
