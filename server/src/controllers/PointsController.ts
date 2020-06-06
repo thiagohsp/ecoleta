@@ -5,6 +5,7 @@ class PointsController {
 
   async index(req: Request, res: Response) {
     const { city, uf, items } = req.query;
+    console.log(req.hostname);
 
     const parsedItems = String(items)
       .split(',')
@@ -18,7 +19,14 @@ class PointsController {
       .distinct()
       .select('points.*')
 
-    return res.json(points)
+    const serializedPoints = points.map(point => {
+      return {
+        ...points,
+        image_url: `http://192.168.0.142:3333/uploads/${point.image}`
+      }
+    })
+
+    return res.json(serializedPoints)
   }
 
   async show(req: Request, res: Response) {
@@ -43,7 +51,7 @@ class PointsController {
     })
       
     return res.json({
-      point, serializedItems 
+      point, items: serializedItems 
     })
   }  
   async create(req: Request, res: Response) {
@@ -62,7 +70,7 @@ class PointsController {
     const trx = await knex.transaction();
   
     const insertedIds = await trx('points').insert({
-      image: 'image-fake',
+      image: req.file.filename,
       name,
       email,
       whatsapp,
@@ -76,7 +84,10 @@ class PointsController {
 
     const point_id = insertedIds[0];
     
-    const pointItems = items.map((item_id: number) => {
+    const pointItems = items
+      .split(',')
+      .map((item: string) => Number(item.trim()))
+      .map((item_id: number) => {
       return {
         item_id,
         point_id
@@ -88,7 +99,13 @@ class PointsController {
     await trx.commit();
 
     return res.status(200).json({
-      ...pointItems,
+      name,
+      email,
+      whatsapp,
+      latitude,
+      longitude,
+      city,
+      uf,
       id: point_id
     })
   }
